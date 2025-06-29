@@ -1,0 +1,41 @@
+Transfer Funds Between Accounts (with check):
+
+CREATE OR REPLACE PROCEDURE TransferFunds (
+  sourceAcc IN NUMBER,
+  targetAcc IN NUMBER,
+  amount IN NUMBER
+) IS
+  sourceBalance NUMBER;
+BEGIN
+  -- Get balance of source account
+  SELECT Balance INTO sourceBalance
+  FROM Accounts
+  WHERE AccountID = sourceAcc;
+
+  IF sourceBalance >= amount THEN
+    -- Deduct from source
+    UPDATE Accounts
+    SET Balance = Balance - amount,
+        LastModified = SYSDATE
+    WHERE AccountID = sourceAcc;
+
+    -- Add to target
+    UPDATE Accounts
+    SET Balance = Balance + amount,
+        LastModified = SYSDATE
+    WHERE AccountID = targetAcc;
+
+    COMMIT;
+  ELSE
+    RAISE_APPLICATION_ERROR(-20001, 'Insufficient balance in source account');
+  END IF;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('Invalid account ID provided.');
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Transfer failed: ' || SQLERRM);
+    ROLLBACK;
+END;
+
+EXEC TransferFunds(1, 2, 200);  -- Transfer ₹200 from Account 1 to Account 2

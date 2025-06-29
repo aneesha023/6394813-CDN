@@ -1,0 +1,15 @@
+Add Bonus to Employee Salaries (by dept & bonus %):
+
+CREATE OR REPLACE PROCEDURE UpdateEmployeeBonus (
+  deptName IN VARCHAR2,
+  bonusPercent IN NUMBER
+) IS
+BEGIN
+  UPDATE Employees
+  SET Salary = Salary + (Salary * bonusPercent / 100)
+  WHERE Department = deptName;
+
+  COMMIT;
+END;
+
+EXEC UpdateEmployeeBonus('IT', 10);  -- 10% bonus to IT dept employees
